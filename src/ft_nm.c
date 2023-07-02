@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 00:14:28 by mbucci            #+#    #+#             */
-/*   Updated: 2023/07/02 02:37:10 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/07/02 17:33:19 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,29 +18,60 @@
 #include <elf.h>
 #include "ft_nm.h"
 
+#define ELF_MAGIC 0x464c457f
+
 void write_error(const char *filename)
 {
 	ft_putstr_fd("ft_nm: ", STDERR_FILENO);
 	perror(filename);
 }
 
-void ft_nm(char *ptr)
+void _64_bit_handler(const void *ptr, const char *filename)
 {
-	int magic_number = *(int *)ptr;
-	printf("magic: %x\n", magic_number);
-	magic_number = *(int*)(ptr+1);
-	printf("ffsdfgic: %x\n", magic_number);
-	printf("target: %d\n", ELFCLASS64);
-	if (magic_number == ELFCLASS64)
+	struct Elf64_Ehdr *elf_header;
+	elf_header = (struct Elf64_Ehdr *)ptr;
+
+	// section header table: ptr + elf_header->e_shoff;
+	// size of a section header: elf_header->e_shnum * elf_header->e_shentsize;
+}
+
+void _32_bit_handler(const void *ptr, const char *filename)
+{
+	(void)ptr;
+	(void)filename;
+}
+
+void ft_nm(const void *ptr, const char *filename)
+{
+	int magic = *(int *)ptr;
+	if (magic != ELF_MAGIC)
 	{
-		printf("64->[%x]\n", ELFCLASS64);
+		ft_putstr_fd("ft_nm: ", STDERR_FILENO);
+		ft_putstr_fd(filename, STDERR_FILENO);
+		ft_putendl_fd(": file format not recognized", STDERR_FILENO);
+		return;
 	}
-	else if (magic_number == ELFCLASS32)
+
+	// a file's class indicates if the file
+	// is 32_bit or 64_bit.
+	int file_class = *(int *)(ptr + 1) >> 24;
+	if (file_class == ELFCLASS64)
 	{
-		printf("32->[%x]\n", ELFCLASS32);
+		// handle 64_bit files
+		_64_bit_handler(ptr, filename);
+	}
+	else if (file_class == ELFCLASS32)
+	{
+		// handle 32_bit files
+		_32_bit_handler(ptr, filename);
 	}
 	else
-		printf("nope\n");
+	{
+		ft_putstr_fd("ft_nm: ", STDERR_FILENO);
+		ft_putstr_fd(filename, STDERR_FILENO);
+		ft_putendl_fd(": file format not recognized", STDERR_FILENO);
+		return;
+	}
 }
 
 void nm_wrapper(const char *filename)
@@ -63,7 +94,7 @@ void nm_wrapper(const char *filename)
 	}
 
 	// load file in memory.
-	char *ptr = (char *)mmap(NULL, buff.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+	const void *ptr = mmap(NULL, buff.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 
 	// no need to keep the fd open
 	// after loading file in memory.
@@ -76,10 +107,10 @@ void nm_wrapper(const char *filename)
 	}
 
 	// do the thing.
-	ft_nm(ptr);
+	ft_nm(ptr, filename);
 
 	// unmap file.
-	if (munmap(ptr, buff.st_size) == -1)
+	if (munmap((void *)ptr, buff.st_size) == -1)
 	{
 		write_error(filename);
 		return;
