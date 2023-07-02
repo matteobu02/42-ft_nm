@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 00:13:19 by mbucci            #+#    #+#             */
-/*   Updated: 2023/06/29 00:13:35 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/07/02 00:56:34 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,11 +17,11 @@
 int main(int ac, char **av)
 {
 	if (ac < 2)
-		ft_nm(DFLT_TARGET);
+		nm_wrapper(DFLT_TARGET);
 	else
 	{
 		for (int i = 1; i < ac; ++i)
-			ft_nm(av[i]);
+			nm_wrapper(av[i]);
 	}
 	return 0;
 }
