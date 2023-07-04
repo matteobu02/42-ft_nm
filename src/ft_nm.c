@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 00:14:28 by mbucci            #+#    #+#             */
-/*   Updated: 2023/07/03 01:31:27 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/07/04 19:08:20 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,13 +20,19 @@
 
 #define ELF_MAGIC 0x464c457f
 
-void write_error(const char *filename)
+static void write_error(const char *filename, const char *msg)
 {
 	ft_putstr_fd("ft_nm: ", STDERR_FILENO);
-	perror(filename);
+	if (msg)
+	{
+		ft_putstr_fd(filename, STDERR_FILENO);
+		ft_putendl_fd(msg, STDERR_FILENO);
+	}
+	else
+		perror(filename);
 }
 
-void handle_64bit(const void *ptr, const char *filename)
+static void handle_64bit(const void *ptr, const char *filename)
 {
 	Elf64_Ehdr *elf_header = (Elf64_Ehdr *)ptr;
 
@@ -38,28 +44,29 @@ void handle_64bit(const void *ptr, const char *filename)
 	{
 		if (sect_tab[i].sh_type == SHT_SYMTAB)
 		{
-			;
+			Elf64_Sym *sym_tab = (Elf64_Sym *)(ptr + sect_tab[i].sh_offset);
+			if (!sym_tab)
+				continue;
+
+			uint64_t sym_tab_entries = sect_tab[i].sh_size / sect_tab[i].sh_entsize;
+			for (uint64_t x = 0; x < sym_tab_entries; ++x)
+				printf("yes\n");
 		}
 	}
 	(void)filename;
 }
 
-void handle_32bit(const void *ptr, const char *filename)
+static void handle_32bit(const void *ptr, const char *filename)
 {
 	(void)ptr;
 	(void)filename;
 }
 
-void ft_nm(const void *ptr, const char *filename)
+static void ft_nm(const void *ptr, const char *filename)
 {
 	int magic = *(int *)ptr;
 	if (magic != ELF_MAGIC)
-	{
-		ft_putstr_fd("ft_nm: ", STDERR_FILENO);
-		ft_putstr_fd(filename, STDERR_FILENO);
-		ft_putendl_fd(": file format not recognized", STDERR_FILENO);
-		return;
-	}
+		return write_error(filename, ": file format not recognized");
 
 	// a file's class indicates if the file
 	// is 32 or 64 bit. The class is stored
@@ -74,12 +81,7 @@ void ft_nm(const void *ptr, const char *filename)
 		handle_32bit(ptr, filename);
 	}
 	else
-	{
-		ft_putstr_fd("ft_nm: ", STDERR_FILENO);
-		ft_putstr_fd(filename, STDERR_FILENO);
-		ft_putendl_fd(": file format not recognized", STDERR_FILENO);
-		return;
-	}
+		return write_error(filename, ": file format not recognized");
 }
 
 void nm_wrapper(const char *filename)
@@ -87,7 +89,7 @@ void nm_wrapper(const char *filename)
 	int fd = open(filename, O_RDONLY);
 	if (fd == -1)
 	{
-		write_error(filename);
+		write_error(filename, NULL);
 		return;
 	}
 
@@ -95,7 +97,7 @@ void nm_wrapper(const char *filename)
 	struct stat buff;
 	if (fstat(fd, &buff) == -1)
 	{
-		write_error(filename);
+		write_error(filename, NULL);
 		return;
 	}
 
@@ -108,7 +110,7 @@ void nm_wrapper(const char *filename)
 
 	if (ptr == MAP_FAILED)
 	{
-		write_error(filename);
+		write_error(filename, NULL);
 		return;
 	}
 
@@ -118,7 +120,7 @@ void nm_wrapper(const char *filename)
 	// unmap file.
 	if (munmap((void *)ptr, buff.st_size) == -1)
 	{
-		write_error(filename);
+		write_error(filename, NULL);
 		return;
 	}
 }
