@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 00:14:28 by mbucci            #+#    #+#             */
-/*   Updated: 2023/07/05 23:38:07 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/07/05 23:50:03 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,8 @@ static uint8_t handle_64bit(const void *ptr)
 	{
 		if (sect_tab[i].sh_type == SHT_SYMTAB)
 		{
+			Elf64_Sym *sym_tab = (Elf64_Sym *)(ptr + sect_tab[i].sh_offset);
+
 			uint64_t sym_tab_entries = sect_tab[i].sh_size / sect_tab[i].sh_entsize;
 			for (uint64_t j = 0; j < sym_tab_entries; ++j)
 			{
