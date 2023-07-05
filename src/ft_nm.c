@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 00:14:28 by mbucci            #+#    #+#             */
-/*   Updated: 2023/07/04 19:08:20 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/07/05 23:38:07 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ static void write_error(const char *filename, const char *msg)
 		perror(filename);
 }
 
-static void handle_64bit(const void *ptr, const char *filename)
+static uint8_t handle_64bit(const void *ptr)
 {
 	Elf64_Ehdr *elf_header = (Elf64_Ehdr *)ptr;
 
@@ -44,41 +44,43 @@ static void handle_64bit(const void *ptr, const char *filename)
 	{
 		if (sect_tab[i].sh_type == SHT_SYMTAB)
 		{
-			Elf64_Sym *sym_tab = (Elf64_Sym *)(ptr + sect_tab[i].sh_offset);
-			if (!sym_tab)
-				continue;
-
 			uint64_t sym_tab_entries = sect_tab[i].sh_size / sect_tab[i].sh_entsize;
-			for (uint64_t x = 0; x < sym_tab_entries; ++x)
-				printf("yes\n");
+			for (uint64_t j = 0; j < sym_tab_entries; ++j)
+			{
+				uint32_t sym_type = ELF64_ST_TYPE(sym_tab[j].st_info);
+				if (sym_type == STT_FUNC || sym_type == STT_OBJECT || sym_type == STT_NOTYPE)
+					printf("%s\n", (char *)(ptr + sect_tab[sect_tab[i].sh_link].sh_offset + sym_tab[j].st_name));
+			}
 		}
 	}
-	(void)filename;
+	return 0;
 }
 
-static void handle_32bit(const void *ptr, const char *filename)
+static uint8_t handle_32bit(const void *ptr)
 {
 	(void)ptr;
-	(void)filename;
+	return 0;
 }
 
 static void ft_nm(const void *ptr, const char *filename)
 {
-	int magic = *(int *)ptr;
+	uint32_t magic = *(uint32_t *)ptr;
 	if (magic != ELF_MAGIC)
 		return write_error(filename, ": file format not recognized");
 
 	// a file's class indicates if the file
 	// is 32 or 64 bit. The class is stored
 	// in the file's 5th byte.
-	int file_class = *(int *)(ptr + 1) >> 24;
+	uint32_t file_class = *(uint32_t *)(ptr + 1) >> 24;
 	if (file_class == ELFCLASS64)
 	{
-		handle_64bit(ptr, filename);
+		if (handle_64bit(ptr))
+			return write_error(filename, ": file corrupted");
 	}
 	else if (file_class == ELFCLASS32)
 	{
-		handle_32bit(ptr, filename);
+		if (handle_32bit(ptr))
+			return write_error(filename, ": file corrupted");
 	}
 	else
 		return write_error(filename, ": file format not recognized");
@@ -86,7 +88,7 @@ static void ft_nm(const void *ptr, const char *filename)
 
 void nm_wrapper(const char *filename)
 {
-	int fd = open(filename, O_RDONLY);
+	int32_t fd = open(filename, O_RDONLY);
 	if (fd == -1)
 	{
 		write_error(filename, NULL);

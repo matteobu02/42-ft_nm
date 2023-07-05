@@ -1,6 +1,6 @@
 NAME		=	ft_nm
 CC			=	gcc
-CFLAGS		=	-Wall -Wextra -Werror -I $(INCLUDE) -g
+CFLAGS		=	-Wall -Wextra -Werror -I $(INCLUDE) #-g
 SRCDIR		=	./src/
 OBJDIR		=	./obj/
 INCLUDE		=	./include/
