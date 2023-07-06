@@ -6,11 +6,10 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 00:14:28 by mbucci            #+#    #+#             */
-/*   Updated: 2023/07/05 23:50:03 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/07/06 18:06:36 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdlib.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <sys/mman.h>
@@ -20,41 +19,52 @@
 
 #define ELF_MAGIC 0x464c457f
 
-static void write_error(const char *filename, const char *msg)
-{
-	ft_putstr_fd("ft_nm: ", STDERR_FILENO);
-	if (msg)
-	{
-		ft_putstr_fd(filename, STDERR_FILENO);
-		ft_putendl_fd(msg, STDERR_FILENO);
-	}
-	else
-		perror(filename);
-}
-
 static uint8_t handle_64bit(const void *ptr)
 {
 	Elf64_Ehdr *elf_header = (Elf64_Ehdr *)ptr;
-
-	// section header table: ptr + elf_header->e_shoff;
-	// size of a section header: elf_header->e_shnum * elf_header->e_shentsize;
 	Elf64_Shdr *sect_tab = (Elf64_Shdr *)(ptr + elf_header->e_shoff);
+	Elf64_Shdr *sym_sect;
+	Elf64_Sym *sym_tab;
 
+	// locate symbol tab.
 	for (uint16_t i = 0; i < elf_header->e_shnum; ++i)
 	{
 		if (sect_tab[i].sh_type == SHT_SYMTAB)
 		{
-			Elf64_Sym *sym_tab = (Elf64_Sym *)(ptr + sect_tab[i].sh_offset);
-
-			uint64_t sym_tab_entries = sect_tab[i].sh_size / sect_tab[i].sh_entsize;
-			for (uint64_t j = 0; j < sym_tab_entries; ++j)
-			{
-				uint32_t sym_type = ELF64_ST_TYPE(sym_tab[j].st_info);
-				if (sym_type == STT_FUNC || sym_type == STT_OBJECT || sym_type == STT_NOTYPE)
-					printf("%s\n", (char *)(ptr + sect_tab[sect_tab[i].sh_link].sh_offset + sym_tab[j].st_name));
-			}
+			sym_tab = (Elf64_Sym *)(ptr + sect_tab[i].sh_offset);
+			sym_sect = &sect_tab[i];
 		}
 	}
+
+	// get string tab.
+	const char *str_tab = (char *)(ptr + sect_tab[ sym_sect->sh_link ].sh_offset);
+
+	// get actual number of symbols.
+	uint64_t sym_num = 0;
+	const uint64_t sym_tab_entries = sym_sect->sh_size / sym_sect->sh_entsize;
+	for (uint64_t i = 0; i < sym_tab_entries; ++i)
+	{
+		uint32_t sym_type = ELF64_ST_TYPE(sym_tab[i].st_info);
+		if (sym_type == STT_FUNC || sym_type == STT_OBJECT || sym_type == STT_NOTYPE)
+			++sym_num;
+	}
+
+	// parse symbol tab.
+	t_sym symbols[sym_num];
+	sym_num = -1;
+	for (uint64_t i = 0; i < sym_tab_entries; ++i)
+	{
+		uint32_t sym_type = ELF64_ST_TYPE(sym_tab[i].st_info);
+		if (sym_type == STT_FUNC || sym_type == STT_OBJECT || sym_type == STT_NOTYPE)
+		{
+			symbols[++sym_num].name = (char *)(str_tab + sym_tab[i].st_name);
+			symbols[sym_num].addr = sym_tab[i].st_value;
+		}
+	}
+	sort_alpha_symbols(symbols, sym_num + 1);
+	for (uint64_t i = 0; i < sym_num + 1; ++i)
+		printf("%lx %s\n", symbols[i].addr, symbols[i].name);
+
 	return 0;
 }
 
