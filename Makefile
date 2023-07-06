@@ -7,6 +7,7 @@ INCLUDE		=	./include/
 
 SRC			=	main.c	\
 				ft_nm.c	\
+				utils.c	\
 					
 OBJ			=	${addprefix $(OBJDIR), $(SRC:%.c=%.o)}
 

@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 00:14:28 by mbucci            #+#    #+#             */
-/*   Updated: 2023/07/06 18:06:36 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/07/06 23:24:58 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,18 @@
 
 #define ELF_MAGIC 0x464c457f
 
-static uint8_t handle_64bit(const void *ptr)
+static void print_symbols(t_sym *symbols, uint16_t size)
+{
+	for (uint64_t i = 0; i < size; ++i)
+	{
+		if (!*symbols[i].name)
+			continue;
+
+		printf("%016lx %c %s\n", symbols[i].addr, ' ', symbols[i].name);
+	}
+}
+
+static uint8_t parse_64bit(const void *ptr)
 {
 	Elf64_Ehdr *elf_header = (Elf64_Ehdr *)ptr;
 	Elf64_Shdr *sect_tab = (Elf64_Shdr *)(ptr + elf_header->e_shoff);
@@ -61,14 +72,15 @@ static uint8_t handle_64bit(const void *ptr)
 			symbols[sym_num].addr = sym_tab[i].st_value;
 		}
 	}
+
+	// print symbols
 	sort_alpha_symbols(symbols, sym_num + 1);
-	for (uint64_t i = 0; i < sym_num + 1; ++i)
-		printf("%lx %s\n", symbols[i].addr, symbols[i].name);
+	print_symbols(symbols, sym_num + 1);
 
 	return 0;
 }
 
-static uint8_t handle_32bit(const void *ptr)
+static uint8_t parse_32bit(const void *ptr)
 {
 	(void)ptr;
 	return 0;
@@ -86,12 +98,12 @@ static void ft_nm(const void *ptr, const char *filename)
 	uint32_t file_class = *(uint32_t *)(ptr + 1) >> 24;
 	if (file_class == ELFCLASS64)
 	{
-		if (handle_64bit(ptr))
+		if (parse_64bit(ptr))
 			return write_error(filename, ": file corrupted");
 	}
 	else if (file_class == ELFCLASS32)
 	{
-		if (handle_32bit(ptr))
+		if (parse_32bit(ptr))
 			return write_error(filename, ": file corrupted");
 	}
 	else
