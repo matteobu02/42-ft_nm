@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/09/01 17:17:34 by mbucci            #+#    #+#             */
-/*   Updated: 2023/07/06 23:32:51 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/07/07 15:22:54 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 int	ft_strncmp(const char *s1, const char *s2, size_t n)
 {
-	int	i;
+	size_t	i;
 
 	if (n == 0)
 		return (0);

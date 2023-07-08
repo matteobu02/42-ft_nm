@@ -13,20 +13,20 @@ void write_error(const char *filename, const char *msg)
 		perror(filename);
 }
 
-static const char *skip_us(const char *s)
-{
-	while (s && *s && !ft_isalpha(*s))
-		++s;
-	return s;
-}
-
 static int8_t compare_sym_names(const char *s1, const char *s2)
 {
-	uint32_t i = 0;
-
-	while (s1[i] && s2[i] && ft_tolower(s1[i]) == ft_tolower(s2[i]))
-		++i;
-	return (ft_tolower(s1[i]) - ft_tolower(s2[i]));
+	while (*s1 && *s2)
+	{
+		while (*s1 && !ft_isalpha(*s1))
+			++s1;
+		while (*s2 && !ft_isalpha(*s2))
+			++s2;
+		if (ft_tolower(*s1) != ft_tolower(*s2))
+			break;
+		++s1;
+		++s2;
+	}
+	return (ft_tolower(*s1) - ft_tolower(*s2));
 }
 
 static void swap_sym(t_sym *s1, t_sym *s2)
@@ -40,16 +40,16 @@ void sort_alpha_symbols(t_sym *symbols, uint64_t size)
 {
 	for (uint64_t i = 0; i < size; ++i)
 	{
-		const char *tmp_name1 = skip_us(symbols[i].name);
+		const char *tmp_name1 = symbols[i].name;
 
 		for (uint64_t j = i + 1; j < size; ++j)
 		{
-			const char *tmp_name2 = skip_us(symbols[j].name);
+			const char *tmp_name2 = symbols[j].name;
 
 			if (compare_sym_names(tmp_name1, tmp_name2) > 0)
 			{
 				swap_sym(&symbols[i], &symbols[j]);
-				tmp_name1 = skip_us(symbols[i].name);
+				tmp_name1 = symbols[i].name;
 			}
  		}
 	}
