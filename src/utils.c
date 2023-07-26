@@ -46,7 +46,7 @@ void sort_alpha_symbols(t_sym *symbols, uint64_t size)
 		{
 			const char *tmp_name2 = symbols[j].name;
 
-			if (compare_sym_names(tmp_name1, tmp_name2) > 0)
+			if (compare_sym_names(tmp_name1, tmp_name2) >= 0)
 			{
 				swap_sym(&symbols[i], &symbols[j]);
 				tmp_name1 = symbols[i].name;

@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 00:14:28 by mbucci            #+#    #+#             */
-/*   Updated: 2023/07/08 19:04:05 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/07/21 11:31:03 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,17 +46,17 @@ static unsigned char get_letter(const Elf64_Sym *sym, const Elf64_Shdr *sects)
 	else if (sects[sym->st_shndx].sh_type == SHT_NOBITS
 			&& sects[sym->st_shndx].sh_flags == (SHF_ALLOC | SHF_WRITE))
 		c = 'B';
-	else if ((sects[sym->st_shndx].sh_type == SHT_PROGBITS 
-				&& (sects[sym->st_shndx].sh_flags == SHF_ALLOC || sects[sym->st_shndx].sh_flags == (SHF_ALLOC | SHF_MERGE))))
-		c = 'R';
 	else if ((sects[sym->st_shndx].sh_type == SHT_PROGBITS
-				&& sects[sym->st_shndx].sh_flags == (SHF_ALLOC | SHF_WRITE))
-			|| sects[sym->st_shndx].sh_type == SHT_DYNAMIC 
-			|| (ELF64_ST_BIND(sym->st_info) == STB_GLOBAL && sects[sym->st_shndx].sh_type == STT_OBJECT && sym->st_shndx == SHN_UNDEF))
+		&& sects[sym->st_shndx].sh_flags == (SHF_ALLOC | SHF_WRITE))
+		|| sects[sym->st_shndx].sh_type == SHT_DYNAMIC )
 		c = 'D';
+	else if (( (sects[sym->st_shndx].sh_type == SHT_PROGBITS
+		|| sects[sym->st_shndx].sh_type == SHT_NOBITS)
+		&& sects[sym->st_shndx].sh_flags == SHF_ALLOC))
+		c = 'R';
 	else if (sects[sym->st_shndx].sh_type == SHT_PROGBITS
-			|| sects[sym->st_shndx].sh_type == SHT_INIT_ARRAY
-			|| sects[sym->st_shndx].sh_type== SHT_FINI_ARRAY)
+		|| sects[sym->st_shndx].sh_type == SHT_INIT_ARRAY
+		|| sects[sym->st_shndx].sh_type== SHT_FINI_ARRAY)
 		c = 'T';
 	else
 		c = '?';
