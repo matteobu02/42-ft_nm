@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 14:40:18 by mbucci            #+#    #+#             */
-/*   Updated: 2023/08/06 15:06:22 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/08/06 15:40:18 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,7 @@ uint8_t parse_64bit(const void *ptr, t_ctxt context)
 	}
 
 	// print symbols
-	sort_alpha_symbols(symbols, sym_num + 1);
+	sort_symbols(symbols, sym_num + 1);
 	print_symbols(symbols, sym_num + 1, context, 64);
 	free(symbols);
 

@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 00:12:35 by mbucci            #+#    #+#             */
-/*   Updated: 2023/08/06 15:05:45 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/08/06 15:40:03 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,4 +41,4 @@ uint8_t parse_32bit(const void *ptr, t_ctxt context);
 /* utils.c */
 void write_error(const char *filename, const char *msg);
 void write_warning(const char *filename, const char *msg);
-void sort_alpha_symbols(t_sym *symbols, uint64_t size);
+void sort_symbols(t_sym *symbols, uint64_t size);
