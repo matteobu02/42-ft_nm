@@ -6,6 +6,8 @@ OBJDIR		=	./obj/
 INCLUDE		=	./include/
 
 SRC			=	main.c	\
+				64bit.c	\
+				32bit.c	\
 				ft_nm.c	\
 				utils.c	\
 					
