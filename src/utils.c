@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 15:28:34 by mbucci            #+#    #+#             */
-/*   Updated: 2023/08/06 16:18:52 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/08/12 00:56:05 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,4 +67,15 @@ void sort_symbols(t_sym *symbols, uint64_t size)
 			}
  		}
 	}
+}
+
+int isnullterm(const void *ptr, int fsize, int offset)
+{
+	while (offset < fsize)
+	{
+		if (!*((char *)ptr + offset))
+			return 1;
+		++offset;
+	}
+	return 0;
 }

@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 14:41:43 by mbucci            #+#    #+#             */
-/*   Updated: 2023/08/06 15:40:29 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/08/12 01:25:37 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,9 @@ static unsigned char get_letter(const Elf32_Sym *sym, const Elf32_Shdr *sects)
 uint8_t parse_32bit(const void *ptr, t_ctxt context)
 {
 	Elf32_Ehdr *elf_header = (Elf32_Ehdr *)ptr;
+	if (elf_header->e_shoff + (sizeof(Elf32_Shdr) * elf_header->e_shnum) > context.fsize)
+		return 1;
+
 	Elf32_Shdr *sect_tab = (Elf32_Shdr *)(ptr + elf_header->e_shoff);
 	Elf32_Shdr *sym_sect;
 	Elf32_Sym *sym_tab;
@@ -106,6 +109,7 @@ uint8_t parse_32bit(const void *ptr, t_ctxt context)
 		{
 			sym_tab = (Elf32_Sym *)(ptr + sect_tab[i].sh_offset);
 			sym_sect = &sect_tab[i];
+			break;
 		}
 	}
 
@@ -117,6 +121,9 @@ uint8_t parse_32bit(const void *ptr, t_ctxt context)
 	const uint32_t sym_tab_entries = sym_sect->sh_size / sym_sect->sh_entsize;
 	for (uint32_t i = 0; i < sym_tab_entries; ++i)
 	{
+		if (sym_sect->sh_offset + (sizeof(Elf32_Sym) * sym_tab_entries) > context.fsize)
+			return 1;
+
 		uint32_t sym_type = ELF32_ST_TYPE(sym_tab[i].st_info);
 		if (sym_type == STT_FUNC || sym_type == STT_OBJECT || sym_type == STT_NOTYPE)
 			++sym_num;
@@ -136,6 +143,13 @@ uint8_t parse_32bit(const void *ptr, t_ctxt context)
 		unsigned char sym_type = ELF32_ST_TYPE(sym_tab[i].st_info);
 		if (sym_type == STT_FUNC || sym_type == STT_OBJECT || sym_type == STT_NOTYPE)
 		{
+			if (sect_tab[ sym_sect->sh_link ].sh_offset + sym_tab[i].st_name > context.fsize
+			|| !isnullterm(ptr, context.fsize, sect_tab[ sym_sect->sh_link ].sh_offset + sym_tab[i].st_name))
+			{
+				free(symbols);
+				return 1;
+			}
+
 			symbols[++sym_num].name = (char *)(str_tab + sym_tab[i].st_name);
 			symbols[sym_num].addr = sym_tab[i].st_value;
 			symbols[sym_num].letter = get_letter(&sym_tab[i], sect_tab);

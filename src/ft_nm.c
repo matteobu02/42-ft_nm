@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 00:14:28 by mbucci            #+#    #+#             */
-/*   Updated: 2023/08/06 15:05:25 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/08/12 00:07:50 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,8 @@
 void print_symbols(const t_sym *symbols, uint64_t size, t_ctxt context, int arch)
 {
 	if (context.ac > 2)
-	{
-		ft_putchar_fd('\n', 1);
-		ft_putstr_fd(context.filename, 1);
-		ft_putendl_fd(":", 1);
-	}
+		printf("\n%s:\n", context.filename);
+
 	for (uint64_t i = 0; i < size; ++i)
 	{
 		if (!*symbols[i].name)
@@ -102,6 +99,7 @@ void nm_wrapper(t_ctxt context)
 		return write_error(context.filename, NULL);
 
 	// do the thing.
+	context.fsize = buff.st_size;
 	ft_nm(ptr, context);
 
 	// unmap file.

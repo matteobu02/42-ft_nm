@@ -6,13 +6,14 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/06/29 00:12:35 by mbucci            #+#    #+#             */
-/*   Updated: 2023/08/06 15:40:03 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/08/12 01:11:16 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <stdint.h>
+#include <sys/types.h>
 #include "../libft/include/libft.h"
 
 typedef struct s_sym
@@ -24,8 +25,9 @@ typedef struct s_sym
 
 typedef struct s_context
 {
-	int			ac;
-	const char	*filename;
+	int				ac;
+	const char		*filename;
+	unsigned long	fsize;
 }	t_ctxt;
 
 /* ft_nm.c */
@@ -42,3 +44,5 @@ uint8_t parse_32bit(const void *ptr, t_ctxt context);
 void write_error(const char *filename, const char *msg);
 void write_warning(const char *filename, const char *msg);
 void sort_symbols(t_sym *symbols, uint64_t size);
+int isnullterm(const void *ptr, int fsize, int offset);
+
