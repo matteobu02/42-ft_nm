@@ -6,7 +6,7 @@
 /*   By: mbucci <marvin@42.fr>                      +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/06 15:28:34 by mbucci            #+#    #+#             */
-/*   Updated: 2023/08/12 00:56:05 by mbucci           ###   ########.fr       */
+/*   Updated: 2023/09/14 16:13:00 by mbucci           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,16 +29,12 @@ static int8_t compare_sym_names(const char *s1, const char *s2)
 {
 	while (*s1 && *s2)
 	{
-		while (*s1 && !ft_isalnum(*s1))
-			++s1;
-		while (*s2 && !ft_isalnum(*s2))
-			++s2;
-		if (ft_tolower(*s1) != ft_tolower(*s2))
+		if (*s1 != *s2)
 			break;
 		++s1;
 		++s2;
 	}
-	return (ft_tolower(*s1) - ft_tolower(*s2));
+	return (*s1 - *s2);
 }
 
 static void swap_sym(t_sym *s1, t_sym *s2)
